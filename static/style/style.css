@@ -1,0 +1,66 @@
+body,div,p,span,ul,li,a,img,input {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font: 15px "Microsoft yahei",Tahoma,Arial,sans-serif;
+	vertical-align: top;
+}
+li {
+	list-style: none;
+	float: left;
+}
+a {
+	text-decoration: none;
+	color: inherit;
+}
+.wrapper {
+	width: 1024px;
+	margin: 0 auto;
+}
+.header {
+	background: #205081;
+	color: white;
+	height: 70px;
+}
+.clear-fix {
+	clear: both;
+	float: none;
+	height: 0;
+}
+.header .logo {
+	width: 30px;
+	height: 30px;
+	background: url(../images/logo.png);
+	float: left;
+	margin: 19px;
+}
+.header .title {
+	font-size: 25px;
+}
+.header .title, .header .subtitle {
+	line-height: 68px;
+}
+.logged-in, form.logged-out {
+	float: right;
+	margin-top: 38px;
+}
+.logged-in li, .logged-out li {
+	margin: 4px 8px;
+}
+img.nav-item, img.avatar {
+	width: 20px;
+	height: 20px;
+	margin: 0 4px;
+}
+.header input {
+	margin: 0 4px;
+}
+.header input {
+	padding: 0 10px;
+	border-radius: 6px;
+	border: 1px solid #fff;
+}
+.header input.button {
+  background: #205081;
+  color: white;
+}
