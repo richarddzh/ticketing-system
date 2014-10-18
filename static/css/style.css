@@ -1,0 +1,13 @@
+.nav-bottom-align {
+	margin-top: 30px;
+}
+body {
+	position: relative;
+	padding-top: 100px;
+}
+/*
+ FOR DEBUG
+ */
+.logged-out {
+	display: none;
+}

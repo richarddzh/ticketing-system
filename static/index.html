@@ -9,31 +9,50 @@
   <!--[if lte IE 7]>
   <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
   <![endif]-->
+	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
+	<!-- Page Header -->
   <div class="navbar navbar-inverse navbar-fixed-top">
 		<div class="navbar-inner">
   	  <div class="container">
 				<div class="brand">
-					<img src="images/logo.png">
-					信息化设备报修系统
-					IT Ticketing System
+					<h2><img src="images/logo.png"> 信息化设备报修系统 <small>IT Ticketing System</small></h1>
 				</div>
-    	  <ul class="nav pull-right">
-      	  <li><a href="#"><i class="icon-user icon-white"></i> 用户名</a></li>
-      	  <li><a href="#"><i class="icon-plus icon-white"></i> 报修</a></li>
-      	  <li><a href="#"><i class="icon-cog icon-white"></i> 设置</a></li>
-       	 	<li><a href="#"><i class="icon-off icon-white"></i> 退出</a></li>
-     		</ul>
-				<form class="navbar-form pull-right">
-					<input type="text" class="input-small" placeholder="用户名">
-  				<input type="password" class="input-small" placeholder="密码">
-  				<button type="submit" class="btn">登录</button>
-				</form>
+				<div class="nav-bottom-align pull-right">
+	    	  <ul class="nav logged-in">
+  	    	  <li><a href="#"><i class="icon-user icon-white"></i> 用户名</a></li>
+    	  	  <li><a href="#"><i class="icon-plus icon-white"></i> 报修</a></li>
+      		  <li><a href="#"><i class="icon-cog icon-white"></i> 设置</a></li>
+       		 	<li><a href="#"><i class="icon-off icon-white"></i> 退出</a></li>
+	     		</ul>
+					<form class="navbar-form logged-out">
+						<input type="text" class="input-small" placeholder="用户名">
+  					<input type="password" class="input-small" placeholder="密码">
+  					<button type="submit" class="btn">登录</button>
+					</form>
+				</div>
     	</div>
   	</div>
   </div>
-
+	<div class="container">
+		<div class="row">
+			<div class="span3">
+				<div class="well">
+					<ul class="nav nav-list">
+						<li class="active"><a href="">添加报修单</a></li>
+						<li><a href="">添加报修单</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="span9"><div class="well">right<br>right</div></div>
+		</div>
+		<div class="row">
+			<div class="span12">
+				<div class="well">footer</div>
+			</div>
+		</div>
+	</div>
   <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
   <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
   <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
