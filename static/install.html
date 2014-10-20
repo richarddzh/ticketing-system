@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+  <!--[if lte IE 6]>
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+  <![endif]-->
+  <!--[if lte IE 7]>
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+  <![endif]-->
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+	<!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="navbar-inner">
+  	  <div class="container">
+				<div class="brand">
+					<h2><img src="images/logo.png"> 信息化设备报修系统 <small>IT Ticketing System</small></h1>
+				</div>
+    	</div>
+  	</div>
+  </div>
+	<div class="container">
+		<div class="row">
+			<div class="span12">
+				<form class="form-horizontal">
+					<div class="control-group">
+    				<label class="control-label" for="dbHost">MySQL服务器地址</label>
+    				<div class="controls">
+      				<input type="text" id="dbHost" value="localhost:3306">
+							<span class="help-inline alert-error">请输入正确的服务器地址，包含端口号</span>
+    				</div>
+  				</div>
+ 					<div class="control-group">
+    				<label class="control-label" for="dbUser">MySQL用户名</label>
+    				<div class="controls">
+      				<input type="text" id="dbUser" value="root">
+              <span class="help-inline alert-info"></span>
+    				</div>
+  				</div>
+          <div class="control-group">
+            <label class="control-label" for="dbPassword">MySQL用户密码</label>
+            <div class="controls">
+              <input type="password" id="dbPassword" placeholder="数据库用户密码">
+              <span class="help-inline"></span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="dbDatabaseName">数据库名称</label>
+            <div class="controls">
+              <input type="text" id="dbDatabaseName" value="db_ticketing">
+              <span class="help-inline"></span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="sysAdmin">网站管理员用户名</label>
+            <div class="controls">
+              <input type="text" id="sysAdmin" value="admin">
+              <span class="help-inline"></span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="sysPassword">网站管理员密码</label>
+            <div class="controls">
+              <input type="text" id="sysPassword" placeholder="设置管理员密码"><br>
+              <input type="text" id="sysPassword2" placeholder="再次输入管理员密码">
+              <span class="help-inline">请将新密码输入两遍</span>
+            </div>
+          </div>
+				  <div class="control-group">
+				    <div class="controls">
+      				<button type="submit" class="btn">现在开始安装</button>
+			    	</div>
+  				</div>
+				</form>
+				<p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+			</div>
+		</div>
+	</div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+</body>
+</html>
