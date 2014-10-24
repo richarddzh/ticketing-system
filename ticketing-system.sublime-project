@@ -1,0 +1,13 @@
+{
+  "folders":
+  [
+    {
+      "path": "static"
+    },
+    {
+      "path": "api"
+    }
+  ],
+  "settings": {},
+  "build_systems": []
+}

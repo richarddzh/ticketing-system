@@ -25,50 +25,49 @@
 	<div class="container">
 		<div class="row">
 			<div class="span12">
-				<form class="form-horizontal" id="form-install" 
-          data-async data-validator="validate_install" data-target="begin_install" 
+				<form class="form-horizontal" id="form-install" data-async data-target="begin_install" 
           method="post" action="../api/post/install.php">
 					<div class="control-group">
     				<label class="control-label" for="dbHost">MySQL服务器地址</label>
     				<div class="controls">
-      				<input type="text" id="dbHost" name="dbHost" value="localhost:3306">
-							<span class="help-inline alert-error">请输入正确的服务器地址，包含端口号</span>
+      				<input type="text" id="dbHost" name="dbHost" value="localhost">
     				</div>
   				</div>
+          <div class="control-group">
+            <label class="control-label" for="dbPort">MySQL服务器端口</label>
+            <div class="controls">
+              <input type="text" id="dbPort" name="dbPort" value="3306">
+            </div>
+          </div>
  					<div class="control-group">
     				<label class="control-label" for="dbUser">MySQL用户名</label>
     				<div class="controls">
       				<input type="text" id="dbUser" name="dbUser" value="root">
-              <span class="help-inline alert-info"></span>
     				</div>
   				</div>
           <div class="control-group">
             <label class="control-label" for="dbPassword">MySQL用户密码</label>
             <div class="controls">
               <input type="password" id="dbPassword" name="dbPassword" placeholder="数据库用户密码">
-              <span class="help-inline"></span>
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="dbDatabaseName">数据库名称</label>
             <div class="controls">
               <input type="text" id="dbDatabaseName" name="dbDatabaseName" value="db_ticketing">
-              <span class="help-inline"></span>
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="sysAdmin">网站管理员用户名</label>
             <div class="controls">
               <input type="text" id="sysAdmin" name="sysAdmin" value="admin">
-              <span class="help-inline"></span>
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="sysPassword">网站管理员密码</label>
             <div class="controls">
-              <input type="text" id="sysPassword" name="sysPassword" placeholder="设置管理员密码"><br>
-              <input type="text" id="sysPassword2" placeholder="再次输入管理员密码">
-              <span class="help-inline">请将新密码输入两遍</span>
+              <input type="password" id="sysPassword" name="sysPassword" placeholder="设置管理员密码"><br>
+              <input type="password" id="sysPassword2" name="sysPassword2" placeholder="再次输入管理员密码">
             </div>
           </div>
 				  <div class="control-group">
@@ -89,14 +88,44 @@
   <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
   <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
   <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
   <script type="text/javascript" src="js/common.js"></script>
   <script type="text/javascript">
     function begin_install(data) {
       alert(data);
     }
-    function validate_install() {
-      return true;
-    }
+    $().ready(function() {
+      $("#form-install").validate({
+        rules: {
+          dbHost: "required",
+          dbPort: { required: true, digits: true },
+          dbUser: "required",
+          dbPassword: "required",
+          dbDatabaseName: "required",
+          sysAdmin: "required",
+          sysPassword: { required: true, minlength: 6 },
+          sysPassword2: { equalTo: "#sysPassword" }
+        },
+        messages: {
+          dbHost: "请输入MySQL服务器的地址。",
+          dbPort: {
+            required: "请输入MySQL服务器的端口。",
+            digits: "端口号必须是数字。"
+          },
+          dbUser: "请输入MySQL用户名。",
+          dbPassword: "请输入MySQL用户密码。",
+          dbDatabaseName: "请输入一个数据库名。",
+          sysAdmin: "请输入新建管理员用户的用户名。",
+          sysPassword: {
+            required: "请输入新建管理员用户的密码。",
+            minlength: "密码长度不能短于6个字符。"
+          },
+          sysPassword2: {
+            equalTo: "请将密码再输入一遍。"
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

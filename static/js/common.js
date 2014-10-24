@@ -6,19 +6,16 @@ jQuery(function($) {
   $("form[data-async]").live("submit", function(event) {
     var $form = $(this);
     var $target = $form.attr("data-target");
-    var $validator = $form.attr("data-validator");
 
-    if (window[$validator]()) {
-      $.ajax({
-        type: $form.attr('method'),
-        url: $form.attr('action'),
-        data: $form.serialize(),
+    $.ajax({
+      type: $form.attr('method'),
+      url: $form.attr('action'),
+      data: $form.serialize(),
 
-        success: function(data, status) {
-          window[$target](data);
-        }
-      });
-    }
+      success: function(data, status) {
+        window[$target](data);
+      }
+    });
     
     event.preventDefault();
   });
