@@ -77,8 +77,8 @@
   				</div>
 				</form>
         <div class="well" id="install-log">
-          <div>安装日志</div>
-          <div id="install-log-messages"></div>
+          <h4>安装日志</h4>
+          <ul id="install-log-messages" class="unstyled"></ul>
         </div>
 				<p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
 			</div>
@@ -94,8 +94,11 @@
       $("#install-log").css("display", "block");
       $("#form-install").css("display", "none");
       data.log.forEach(function(line) {
-        var para = $("<p></p>").text(line);
-        $("#install-log-messages").append(para);
+        console.log(line);
+        var span = $("<span></span>").text(line.message);
+        var icon = $("<i></i>").attr("class", line.class === "ok" ? "icon-ok" : "icon-remove");
+        var li = $("<li></li>").append(icon).append(span);
+        $("#install-log-messages").append(li);
       });
     }
     $().ready(function() {
@@ -106,7 +109,7 @@
           dbPort: { required: true, digits: true },
           dbUser: "required",
           dbPassword: "required",
-          dbDatabaseName: "required",
+          dbDatabaseName: { required: true, identifier: true },
           sysAdmin: "required",
           sysPassword: { required: true, minlength: 6 },
           sysPassword2: { equalTo: "#sysPassword" }
@@ -119,7 +122,10 @@
           },
           dbUser: "请输入MySQL用户名。",
           dbPassword: "请输入MySQL用户密码。",
-          dbDatabaseName: "请输入一个数据库名。",
+          dbDatabaseName: {
+            required: "请输入一个数据库名。",
+            identifier: "数据库名应当使用字母、数字或者下划线。"
+          },
           sysAdmin: "请输入新建管理员用户的用户名。",
           sysPassword: {
             required: "请输入新建管理员用户的密码。",

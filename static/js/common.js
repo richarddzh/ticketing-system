@@ -13,10 +13,18 @@ jQuery(function($) {
       data: $form.serialize(),
 
       success: function(data, status) {
+        console.log(data);
+        if (typeof(data) === "string") {
+          data = JSON.parse(data);
+        }
         window[$target](data);
       }
     });
     
     event.preventDefault();
   });
-})
+});
+
+jQuery.validator.addMethod("identifier", function(value, element) {
+  return this.optional(element) || /^[A-Za-z]+[A-Za-z0-9_]*$/.test(value);
+}, "Please specify a valid identifier.");
