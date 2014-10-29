@@ -26,7 +26,7 @@
 		<div class="row">
 			<div class="span12">
 				<form class="form-horizontal" id="form-install" data-async data-target="begin_install" 
-          method="post" action="../api/post/install.php">
+          method="post" action="../api/install.php">
 					<div class="control-group">
     				<label class="control-label" for="dbHost">MySQL服务器地址</label>
     				<div class="controls">
@@ -76,11 +76,9 @@
 			    	</div>
   				</div>
 				</form>
-        <div class="well">
-          <div id="install-log">
-            <div>安装日志</div>
-            <div id="install-log-messages"></div>
-          </div>
+        <div class="well" id="install-log">
+          <div>安装日志</div>
+          <div id="install-log-messages"></div>
         </div>
 				<p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
 			</div>
