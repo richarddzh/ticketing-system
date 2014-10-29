@@ -78,7 +78,8 @@
 				</form>
         <div class="well">
           <div id="install-log">
-            安装日志
+            <div>安装日志</div>
+            <div id="install-log-messages"></div>
           </div>
         </div>
 				<p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
@@ -92,9 +93,15 @@
   <script type="text/javascript" src="js/common.js"></script>
   <script type="text/javascript">
     function begin_install(data) {
-      alert(data);
+      $("#install-log").css("display", "block");
+      $("#form-install").css("display", "none");
+      data.log.forEach(function(line) {
+        var para = $("<p></p>").text(line);
+        $("#install-log-messages").append(para);
+      });
     }
     $().ready(function() {
+      $("#install-log").css("display", "none");
       $("#form-install").validate({
         rules: {
           dbHost: "required",
