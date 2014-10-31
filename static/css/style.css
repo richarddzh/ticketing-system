@@ -21,9 +21,3 @@ body {
 input.error {
   border-color: #b94a48;
 }
-/*
- FOR DEBUG
- */
-.logged-out {
-	display: none;
-}

@@ -1,20 +1,7 @@
 <?php
 
-error_reporting(0);
 @include_once("config.php");
-
-header("Content-Type: application/json");
-$result = new stdClass();
-$result->status = "error";
-$result->log = array();
-
-function logline($msg, $class = "ok") {
-  global $result;
-  $log = new stdClass();
-  $log->message = $msg;
-  $log->class = $class;
-  $result->log[] = $log;
-}
+@include_once("common.php");
 
 function writeconfig($fp) {
   fwrite($fp, "<?php\n\$DZ_INSTALLED = true;\n");
@@ -24,16 +11,6 @@ function writeconfig($fp) {
   fwrite($fp, "\$DZ_DB_PASSWORD = \"$_POST[dbPassword]\";\n");
   fwrite($fp, "\$DZ_DB_DBNAME = \"$_POST[dbDatabaseName]\";\n");
   fwrite($fp, "?>\n");
-}
-
-function dbquery($db, $sql) {
-  logline("执行：$sql");
-  if (true != $db->query($sql)) {
-    logline("执行SQL语句失败。", "error");
-    logline("错误信息：MySQL Error: " . $db->error, "error");
-    return false;
-  } 
-  return true;
 }
 
 do {
@@ -62,44 +39,69 @@ do {
     logline("成功连接到 " . $_POST["dbHost"] . " 上的MySQL数据库。");
   }
 
+  if (!$mysqli->set_charset("utf8")) {
+    logline("无法设置数据库连接的字符集为utf8。", "error");
+    break;
+  }
   if (!dbquery($mysqli, "CREATE DATABASE `$_POST[dbDatabaseName]`")) break;
-  if (!dbquery($mysqli, <<<MYSQL
-    CREATE TABLE table_user (
-      username VARCHAR(16),
-      password VARCHAR(32) NOT NULL,
-      displayname VARCHAR(16) NOT NULL,
-      role VARCHAR(16) NOT NULL,
-      jsoninfo VARCHAR(512) NOT NULL,
-      PRIMARY KEY (username)
-    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
-MYSQL;
-  )) break;
-  if (!dbquery($mysqli, <<<MYSQL
-    CREATE TABLE table_entity (
-      id INT AUTO_INCREMENT,
-      refid INT NOT NULL,
-      relation VARCHAR(16),
-      name VARCHAR(32) NOT NULL,
-      PRIMARY KEY (id)
-    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
-MYSQL;
-  )) break;
-  if (!dbquery($mysqli, <<<MYSQL
-    CREATE TABLE table_ticket (
-      id INT AUTO_INCREMENT,
-      createuser VARCHAR(16) NOT NULL,
-      responsibleuser VARCHAR(16) NOT NULL,
-      devicetype VARCHAR(16) NOT NULL,
-      devicemodal VARCHAR(16) NOT NULL,
-      status VARCHAR(16) NOT NULL,
-      createtime TIMESTAMP NOT NULL,
-      updatetime TIMESTAMP NOT NULL,
-      jsoninfo VARCHAR(512) NOT NULL,
-      PRIMARY KEY (id)
-    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
-MYSQL;
-  )) break;
+  if (!$mysqli->select_db($_POST["dbDatabaseName"])) {
+    logline("无法使用数据库。", "error");
+    break;
+  }
 
+  if (!dbquery($mysqli, <<<MYSQL
+    CREATE TABLE `table_user` (
+      `username`      VARCHAR(16),
+      `password`      VARCHAR(32) NOT NULL,
+      `displayname`   VARCHAR(16) NOT NULL,
+      `role`          VARCHAR(16) NOT NULL,
+      `jsoninfo`      VARCHAR(512) NOT NULL,
+      PRIMARY KEY     (`username`)
+    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+MYSQL
+)) break;
+  if (!dbquery($mysqli, <<<MYSQL
+    CREATE TABLE `table_type` (
+      `name`          VARCHAR(32),
+      `jsoninfo`      VARCHAR(512) NOT NULL,
+      PRIMARY KEY     (`name`)
+    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+MYSQL
+  )) break;
+  if (!dbquery($mysqli, <<<MYSQL
+    CREATE TABLE `table_ticket` (
+      `id`            INT AUTO_INCREMENT,
+      `createuser`    VARCHAR(16) NOT NULL,
+      `owner`         VARCHAR(16) NOT NULL,
+      `devicetype`    VARCHAR(32) NOT NULL,
+      `devicemodal`   VARCHAR(32) NOT NULL,
+      `status`        VARCHAR(16) NOT NULL,
+      `createtime`    TIMESTAMP NOT NULL,
+      `updatetime`    TIMESTAMP NOT NULL,
+      `jsoninfo`      VARCHAR(512) NOT NULL,
+      PRIMARY KEY     (`id`)
+    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+MYSQL
+  )) break;
+  if (!dbquery($mysqli, <<<MYSQL
+    CREATE TABLE `table_record` (
+      `id`            INT AUTO_INCREMENT,
+      `ticketid`      INT NOT NULL,
+      `recorder`      VARCHAR(16) NOT NULL,
+      `follower`      VARCHAR(16) NOT NULL,
+      `recordtime`    TIMESTAMP NOT NULL,
+      `jsoninfo`      VARCHAR(512) NOT NULL,
+      PRIMARY KEY     (`id`)
+    ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+MYSQL
+  )) break;
+  if (!dbquery($mysqli, <<<MYSQL
+    INSERT INTO `table_user` (`username`,`password`,`displayname`,`role`,`jsoninfo`) 
+    VALUES (?,?,'管理员','administrator','{}'), ('guest','guest','未登录','guest','{}')
+MYSQL
+  , $_POST["sysAdmin"], $_POST["sysPassword"])) break;
+
+  $mysqli->close();
 
   logline("成功创建数据库，添加管理员用户。");
   logline("安装完成。");
