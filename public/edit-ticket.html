@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+<![endif]-->
+<!--[if lte IE 7]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="brand">
+          <h2>信息化设备报修系统</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Page Body -->
+  <div class="container">
+    <div class="row">
+      <div class="span2">
+        <form id="form-login" data-async data-target="on_login" method="post" action="/api/login.php">
+          <span class="help-block">未登录</span>
+          <span class="help-block">输入用户名和密码</span>
+          <input type="text" placeholder="输入用户名" id="username" name="username" class="span2">
+          <input type="password" placeholder="输入密码" id="password" name="password" class="span2">
+          <button type="submit" class="btn">登录</button>
+        </form>
+        <ul class="nav nav-tabs nav-stacked require-login">
+          <li class="active"><a href="javascript:void(0)" class="btn data-username">管理员</a></li>
+          <li><a href="index.html"><i class="icon-th-list"></i> 浏览</a></li>
+          <li><a href="new-ticket.html"><i class="icon-plus"></i> 报修</a></li>
+          <li><a href="user-config.html"><i class="icon-cog"></i> 用户设置</a></li>
+          <li class="require-admin"><a href="user-manage.html"><i class="icon-user"></i> 用户管理</a></li>
+          <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
+        </ul>
+      </div>
+      <div class="span10">
+        <form class="form-horizontal" id="edit-ticket" data-async data-target="edit_ticket" method="post" action="/api/edit-ticket.php">
+          <input type="text" id="id" name="id" style="display:none;" value="">
+          <div class="control-group">
+            <label class="control-label" for="item">报修项目</label>
+            <div class="controls">
+              <input type="text" id="item" name="item">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="description">详情描述</label>
+            <div class="controls">
+              <textarea rows="3" id="description" name="description"></textarea>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="owner">责任人</label>
+            <div class="controls">
+              <input type="text" id="owner" name="owner">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="deadline">预计修复时间</label>
+            <div class="controls">
+              <input type="text" id="deadline" name="deadline">
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <button type="submit" class="btn">提交修改</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+  </div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/login.js"></script>
+  <script type="text/javascript">
+  $().ready(function() {
+    var id = parseInt(/ticket-([0-9]+)\.html/.exec(window.location.pathname)[1], 10);
+    $.post("/api/list-ticket.php", {id:id}, function(result) {
+      if (result && !result.error && result.tickets && result.tickets[0]) {
+        var ticket = result.tickets[0];
+        $("input#id").val(ticket.id);
+        $("input#item").val(ticket.jsoninfo.item);
+        $("textarea#description").val(ticket.jsoninfo.description);
+        $("input#owner").val(ticket.owner);
+        $("input#deadline").val(format_date(new Date(ticket.jsoninfo.deadline), "yyyy-M-d hh:mm"));
+      }
+    });
+    $("#edit-ticket").validate({
+      rules: {
+        item: "required",
+        description: { required: true, minlength: 20 },
+        owner: "required",
+        deadline: { required: true, timestamp: true }
+      },
+      messages: {
+        item: "请输入维修项目的名称。",
+        description: { 
+          required: "请详细描述待维修项目的具体信息和报修原因。",
+          minlength: "请更加详细的描述待维修项目的具体信息和报修原因。"
+        },
+        owner: "请输入维修责任人。",
+        deadline: {
+          required: "请输入维修的预计时限。",
+          timestamp: "请按照如 2014-11-9 14:05 的格式输入修复时限。"
+        }
+      }
+    });
+  });
+  function edit_ticket(result) {
+    var id = parseInt(/ticket-([0-9]+)\.html/.exec(window.location.pathname)[1], 10);
+    if (result.error) {
+      alert("操作失败：" + result.message + " (" + result.error + ").");
+    } else {
+      alert("操作成功。");
+      window.location.assign("/ticket-" + id + ".html");
+    }
+  }
+</script>
+</body>
+</html>

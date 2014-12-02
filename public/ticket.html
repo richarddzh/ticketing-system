@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+<![endif]-->
+<!--[if lte IE 7]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="brand">
+          <h2>信息化设备报修系统</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Page Body -->
+  <div class="container">
+    <div class="row">
+      <div class="span2">
+        <form id="form-login" data-async data-target="on_login" method="post" action="/api/login.php">
+          <span class="help-block">未登录</span>
+          <span class="help-block">输入用户名和密码</span>
+          <input type="text" placeholder="输入用户名" id="username" name="username" class="span2">
+          <input type="password" placeholder="输入密码" id="password" name="password" class="span2">
+          <button type="submit" class="btn">登录</button>
+        </form>
+        <ul class="nav nav-tabs nav-stacked require-login">
+          <li class="active"><a href="javascript:void(0)" class="btn data-username">管理员</a></li>
+          <li><a href="index.html"><i class="icon-th-list"></i> 浏览</a></li>
+          <li><a href="new-ticket.html"><i class="icon-plus"></i> 报修</a></li>
+          <li><a href="user-config.html"><i class="icon-cog"></i> 用户设置</a></li>
+          <li class="require-admin"><a href="user-manage.html"><i class="icon-user"></i> 用户管理</a></li>
+          <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
+        </ul>
+      </div>
+      <div class="span10">
+        <div class="well" id="ticket-content">
+        </div>
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#tab-action" data-toggle="tab">操作</a></li>
+          <li><a href="#tab-comment" data-toggle="tab">历史记录</a></li>
+        </ul>
+        <div class="tab-content">
+          <blockquote id="comment-demo">
+            <div><span class="author">登记人</span>：<span class="message">message</span></div>
+            <a href="" target="_blank" class="file">
+              <img class="image" src="">
+              <span class="link">附件：<span class="filename">filename</span></span>
+            </a>
+            <small>
+              登记时间：<span class="updatetime">2011-10-10 10:10</span>
+              <a js-caller js-function="remove_comment" js-arg="" class="remove-link">删除</a>
+            </small>
+          </blockquote>
+          <div class="tab-pane" id="tab-comment">
+          </div>
+          <div class="tab-pane active" id="tab-action">
+            <iframe id="frm-comment-ticket" name="frm-comment-ticket" style="display:none;"></iframe>
+            <form class="form-horizontal" id="comment-ticket" method="post" action="/api/comment-ticket.php" enctype="multipart/form-data" target="frm-comment-ticket">
+              <input class="ticketid" type="text" name="ticketid" value="" style="display:none;">
+              <div class="control-group">
+                <label class="control-label" for="action">操作</label>
+                <div class="controls">
+                  <select id="action" name="action">
+                    <option value="complete">完成维修</option>
+                    <option value="cancel">删除报修单</option>
+                    <option value="comment">追加跟踪信息</option>
+                    <option value="reopen">重新维修</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label" for="comment">备注信息 (可选)</label>
+                <div class="controls">
+                  <textarea rows="3" id="comment" name="comment"></textarea>
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label" for="file">附加上传文件 (可选)</label>
+                <div class="controls">
+                  <input type="file" id="file" name="file">
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label" for="author">登记人</label>
+                <div class="controls">
+                  <input type="text" id="author" name="author">
+                </div>
+              </div>
+              <div class="control-group">
+                <div class="controls">
+                  <button type="submit" class="btn">执行操作</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="media" id="ticket-demo">
+          <button class="btn btn-success pull-left"><i class="icon-check"></i>
+            <span class="status">已修复</span>
+          </button>
+          <div class="media-body">
+            <div>
+              <strong><span id="data-starter">报修人</span></strong> 报修了
+              <span id="data-item">报修项目</span>。
+            </div>
+            <div id="data-detail">
+              demo detail
+            </div>
+            <div>责任人: <span id="data-owner">某某</span></div>
+            <div>报修时间: <span id="data-issuetime">2014-12-12 12:12</span></div>
+            <div>维修时限: <span id="data-deadline">2014-12-12 12:12</span></div>
+            <div>最近更新: <span id="data-updatetime">2014-12-12 12:12</span></div>
+            <div class="pull-right"><a id="data-edit-link" href="">编辑</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+  </div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/login.js"></script>
+  <script type="text/javascript">
+  $().ready(function() {
+    var id = parseInt(/ticket-([0-9]+)\.html/.exec(window.location.pathname)[1], 10);
+    load_ticket(id);
+    $("#comment-ticket").validate({
+      rules: {
+        author: "required"
+      },
+      messages: {
+        author: "必须填写登记人。"
+      }
+    });
+    $("ul.nav-tabs a").on("show", function() { load_comment(id); });
+  });
+  $("#frm-comment-ticket").load(function() {
+    var iframe = $("#frm-comment-ticket")[0];
+    var json = iframe.contentWindow.document.body.innerText;
+    var result = JSON.parse(json);
+    if (!result || result.error) {
+      alert("操作失败：" + result.message + "(" + JSON.stringify(result.error) + ")");
+    } else {
+      alert("操作成功。");
+      var id = parseInt(/ticket-([0-9]+)\.html/.exec(window.location.pathname)[1], 10);
+      load_ticket(id);
+    }
+  });
+  function load_ticket(id) {
+    $.post("/api/list-ticket.php", {id:id}, function(result) {
+      if (result && result.tickets && result.tickets[0]) {
+        $("#ticket-content").empty();
+        $("#ticket-content").append(render_ticket(result.tickets[0], "yyyy年M月d日 hh时mm分"));
+        $("#ticket-content #data-edit-link").css("display", result.tickets[0].editable ? "inline" : "none");
+        $("input.ticketid").val(id);
+      }
+    });
+  }
+  function load_comment(id) {
+    $.post("/api/list-comment.php", {ticketid:id}, function(result) {
+      if (!result || !result.comments) return;
+      $("#tab-comment").empty();
+      result.comments.forEach(function(record) {
+        var action = {
+          complete: "完成了维修。",
+          cancel: "取消了报修单。",
+          reopen: "提交重新维修。",
+          edit: "修改了报修单。",
+          comment: ""
+        };
+        var message = action[record.jsoninfo.action] + (record.jsoninfo.comment || "");
+        var elem = $("#comment-demo").clone();
+        elem.find(".author").text(record.jsoninfo.author);
+        elem.find(".updatetime").text(format_date(record.updatetime, "yyyy年M月d日 hh时mm分"));
+        elem.find(".message").text(message);
+        elem.find(".remove-link").css("display", record.editable === true ? "inline" : "none");
+        elem.find(".remove-link").attr("js-arg", record.id);
+        elem.attr("id", "comment-" + record.id);
+        if (record.jsoninfo.file) {
+          elem.find(".file").css("display", "inline");
+          elem.find(".filename").text(record.jsoninfo.file.originalname);
+          elem.find("a.file").attr("href", "/upload/" + record.jsoninfo.file.name);
+          elem.find(".file img.image").attr("src", "/upload/" + record.jsoninfo.file.name);
+          var re = /\.(bmp|jpg|jpeg|png|gif)$/i;
+          if (re.test(record.jsoninfo.file.name)) {
+            elem.find(".file .image").css("display", "inline");
+            elem.find(".file .link").css("display", "none");
+          } else {
+            elem.find(".file .image").css("display", "none");
+            elem.find(".file .link").css("display", "inline");
+          }
+        } else {
+          elem.find(".file").css("display", "none");
+        }
+        $("#tab-comment").append(elem);
+      });
+    });
+  }
+  function remove_comment(id) {
+    if (!confirm("确实要删除这条记录吗？")) return;
+    $.post("/api/remove-comment.php", {id:id}, function(result) {
+      if (!result || result.error) {
+        alert("操作失败：" + result.message + "(" + JSON.stringify(result.error) + ")");
+      } else {
+        $("#comment-" + id).remove();
+      }
+    });
+  }
+</script>
+</body>
+</html>

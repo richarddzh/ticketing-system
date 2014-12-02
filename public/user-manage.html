@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+<![endif]-->
+<!--[if lte IE 7]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="brand">
+          <h2>信息化设备报修系统</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Page Body -->
+  <div class="container">
+    <div class="row">
+      <div class="span2">
+        <form id="form-login" data-async data-target="on_login" method="post" action="/api/login.php">
+          <span class="help-block">未登录</span>
+          <span class="help-block">输入用户名和密码</span>
+          <input type="text" placeholder="输入用户名" id="username" name="username" class="span2">
+          <input type="password" placeholder="输入密码" id="password" name="password" class="span2">
+          <button type="submit" class="btn">登录</button>
+        </form>
+        <ul class="nav nav-tabs nav-stacked require-login">
+          <li class="active"><a href="javascript:void(0)" class="btn data-username">管理员</a></li>
+          <li><a href="index.html"><i class="icon-th-list"></i> 浏览</a></li>
+          <li><a href="new-ticket.html"><i class="icon-plus"></i> 报修</a></li>
+          <li><a href="user-config.html"><i class="icon-cog"></i> 用户设置</a></li>
+          <li class="require-admin active"><a href="user-manage.html"><i class="icon-user"></i> 用户管理</a></li>
+          <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
+        </ul>
+      </div>
+      <div class="span3">
+        <table class="table table-condensed">
+          <thead>
+            <tr><th>用户名</th><th>角色</th><th>操作</th></tr>
+            <tr id="tr-user">
+              <td class="data-user-id">admin</td>
+              <td class="data-user-role">管理员</td>
+              <td><a js-caller js-function="delete_user"><i class="icon-remove"></i> 删除</a></td>
+            </tr>
+          </thead>
+          <tbody id="user-list">
+          </tbody>
+        </table>
+      </div>
+      <div class="span6 well">
+        <p class="text-center">添加或更新用户</p>
+        <form class="form-horizontal" id="form-add-user" data-async data-target="on_add_user" method="post" action="/api/add-user.php">
+          <div class="control-group">
+            <label class="control-label" for="id">用户名</label>
+            <div class="controls">
+              <input type="text" id="id" name="id">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="password">密码</label>
+            <div class="controls">
+              <input type="password" id="password" name="password">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="role">角色</label>
+            <div class="controls">
+              <select id="role" name="role">
+                <option value="admin">管理员</option>
+                <option value="user">用户</option>
+              </select>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="action">操作</label>
+            <div class="controls">
+              <select id="action" name="action">
+                <option value="insert">增加新用户</option>
+                <option value="update">修改现有用户</option>
+              </select>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <div class="btn-group">
+                <button type="submit" class="btn">提交</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+  </div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/login.js"></script>
+  <script type="text/javascript">
+  $().ready(function() {
+    list_users();
+    $("#form-add-user").validate({
+      rules: {
+        id: { required: true, identifier: true },
+        password: { required: true, minlength: 6 }
+      },
+      messages: {
+        id: {
+          required: "请输入新建用户的用户名。",
+          identifier: "用户名应当使用字母、数字或者下划线。"
+        },
+        password: {
+          required: "请输入新建用户的密码。",
+          minlength: "密码长度不能短于6个字符。"
+        }
+      }
+    });
+  });
+  function on_add_user(result) {
+    if (result.error) {
+      alert("操作失败：" + result.message + " (" + result.error + ").");
+    } else {
+      alert("操作成功。");
+      list_users();
+    }
+  }
+  function list_users() {
+    $.post("/api/list-user.php", function(result) {
+      var users = result.users;
+      if (users && users.forEach) {
+        $("#user-list").empty();
+        users.forEach(function(u) {
+          var tr = $("#tr-user").clone();
+          tr.find(".data-user-id").text(u.id);
+          tr.find(".data-user-role").text(u.role === "admin" ? "管理员" : "用户");
+          tr.attr("id", "tr-user-" + u.id);
+          tr.find("a").attr("js-arg", u.id);
+          $("#user-list").append(tr);
+        });
+      }
+    });
+  }
+  function delete_user(arg) {
+    if (confirm("确定要删除用户：" + arg + "吗？")) {
+      $.post("/api/delete-user.php", {id: arg}, function(result) {
+        if (result.error) {
+          alert("操作失败：" + result.message + " (" + result.error + ").");
+        } else {
+          $("#tr-user-" + arg).remove();
+        }
+      });
+    }
+  }
+</script>
+</body>
+</html>

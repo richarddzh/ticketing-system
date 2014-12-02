@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+<![endif]-->
+<!--[if lte IE 7]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="brand">
+          <h2>信息化设备报修系统</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Page Body -->
+  <div class="container">
+    <div class="row">
+      <div class="span2">
+        <form id="form-login" data-async data-target="on_login" method="post" action="/api/login.php">
+          <span class="help-block">未登录</span>
+          <span class="help-block">输入用户名和密码</span>
+          <input type="text" placeholder="输入用户名" id="username" name="username" class="span2">
+          <input type="password" placeholder="输入密码" id="password" name="password" class="span2">
+          <button type="submit" class="btn">登录</button>
+        </form>
+        <ul class="nav nav-tabs nav-stacked require-login">
+          <li class="active"><a href="javascript:void(0)" class="btn data-username">管理员</a></li>
+          <li><a href="index.html"><i class="icon-th-list"></i> 浏览</a></li>
+          <li><a href="new-ticket.html"><i class="icon-plus"></i> 报修</a></li>
+          <li class="active"><a href="user-config.html"><i class="icon-cog"></i> 用户设置</a></li>
+          <li class="require-admin"><a href="user-manage.html"><i class="icon-user"></i> 用户管理</a></li>
+          <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
+        </ul>
+      </div>
+      <div class="span10">
+        <p>用户名：<span class="data-user-id"></span></p>
+        <p>修改用户显示名称 (<span class="data-username"></span>)：</p>
+        <form class="form-horizontal well" id="update-user" data-async data-target="on_update_user" method="post" action="/api/update-user.php">
+          <input type="text" name="action" value="update-name" style="display:none;">
+          <div class="control-group">
+            <label class="control-label" for="name">显示名称</label>
+            <div class="controls">
+              <input type="text" id="name" name="name">
+              <button type="submit" class="btn">提交</button>
+            </div>
+          </div>
+        </form>
+        <p>修改用户密码：</p>
+        <form class="form-horizontal well" id="change-password" data-async data-target="on_update_user" method="post" action="/api/update-user.php">
+          <input type="text" name="action" value="change-password" style="display:none;">
+          <div class="control-group">
+            <label class="control-label" for="oldpassword">旧密码</label>
+            <div class="controls">
+              <input type="password" id="oldpassword" name="oldpassword">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="newpassword">新密码输入两遍</label>
+            <div class="controls">
+              <input type="password" id="newpassword" name="newpassword">
+              <input type="password" id="newpassword2" name="newpassword2">
+              <button type="submit" class="btn">提交</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+  </div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/login.js"></script>
+  <script type="text/javascript">
+  $().ready(function() {
+    $("#update-user").validate({
+      rules: {
+        name: "required"
+      },
+      messages: {
+        name: {
+          required: "请输入用于显示的用户名称。"
+        }
+      }
+    });
+    $("#change-password").validate({
+      rules: {
+        oldpassword: "required",
+        newpassword: { required: true, minlength: 6 },
+        newpassword2: { equalTo: "#newpassword" }
+      },
+      messages: {
+        oldpassword: {
+          required: "请输入旧密码。"
+        },
+        newpassword: {
+          required: "请输入新的用户密码。",
+          minlength: "密码长度不能短于6个字符。"
+        },
+        newpassword2: {
+          equalTo: "请将密码再输入一遍。"
+        }
+      }
+    });
+  });
+  function on_update_user(result) {
+    if (result.error) {
+      alert("操作失败：" + result.message + " (" + result.error + ").");
+    } else {
+      $.post("/api/login-user.php", function(res) {
+        on_login(res);
+      });
+      alert("操作成功。");
+    }
+  }
+</script>
+</body>
+</html>

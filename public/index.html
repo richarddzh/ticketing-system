@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+<![endif]-->
+<!--[if lte IE 7]>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+  <!-- Page Header -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="brand">
+          <h2>信息化设备报修系统</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Page Body -->
+  <div class="container">
+    <div class="row">
+      <div class="span2">
+        <form id="form-login" data-async data-target="on_login" method="post" action="/api/login.php">
+          <span class="help-block">未登录</span>
+          <span class="help-block">输入用户名和密码</span>
+          <input type="text" placeholder="输入用户名" id="username" name="username" class="span2">
+          <input type="password" placeholder="输入密码" id="password" name="password" class="span2">
+          <button type="submit" class="btn">登录</button>
+        </form>
+        <ul class="nav nav-tabs nav-stacked require-login">
+          <li class="active"><a href="javascript:void(0)" class="btn data-username">管理员</a></li>
+          <li class="active"><a href="index.html"><i class="icon-th-list"></i> 浏览</a></li>
+          <li><a href="new-ticket.html"><i class="icon-plus"></i> 报修</a></li>
+          <li><a href="user-config.html"><i class="icon-cog"></i> 用户设置</a></li>
+          <li class="require-admin"><a href="user-manage.html"><i class="icon-user"></i> 用户管理</a></li>
+          <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
+        </ul>
+      </div>
+      <div class="span10">
+        <form class="navbar-form pull-right form-inline">
+          <select id="select-uid" class="span2"></select>
+        </form> 
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#tab-assigned" data-toggle="tab">待维修(<span class="data-count-assigned"></span>)</a></li>
+          <li><a href="#tab-fixed" data-toggle="tab">已修复(<span class="data-count-fixed"></span>)</a></li>
+          <li><a href="#tab-closed" data-toggle="tab">已取消(<span class="data-count-closed"></span>)</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="tab-assigned">
+            <div class="media" id="ticket-demo">
+              <button class="btn btn-success pull-left"><i class="icon-check"></i>
+                <span class="status">已修复</span>
+              </button>
+              <div class="media-body">
+                <div>
+                  <strong><span id="data-starter">报修人</span></strong> 报修了
+                  <span id="data-item">报修项目</span>。
+                  <a id="data-link" href="">详情</a>
+                </div>
+                <div id="data-detail">
+                  demo detail
+                </div>
+                <small class="muted">
+                  责任人:<span id="data-owner">某某</span>
+                  　报修时间:<span id="data-issuetime">2014-12-12 12:12</span>
+                  　维修时限:<span id="data-deadline">2014-12-12 12:12</span>
+                  　最近更新:<span id="data-updatetime">2014-12-12 12:12</span>
+                </small>
+              </div>
+            </div>
+            <div id="content" class="content"></div>
+            <div class="pager">
+              <ul>
+                <li class="prev disabled"><a href="javascript:previous_page('assigned')">前一页</a></li>
+                <li class="active"><span>第<span class="current-page">1</span>页</span></li>
+                <li class="next-page disabled"><a href="javascript:next_page('assigned')">后一页</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="tab-pane" id="tab-fixed">
+            <div id="content" class="content"></div>
+            <div class="pager">
+              <ul>
+                <li class="prev disabled"><a href="javascript:previous_page('fixed')">前一页</a></li>
+                <li class="active"><span>第<span class="current-page">1</span>页</span></li>
+                <li class="next-page disabled"><a href="javascript:next_page('fixed')">后一页</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="tab-pane" id="tab-closed">
+            <div id="content" class="content"></div>
+            <div class="pager">
+              <ul>
+                <li class="prev disabled"><a href="javascript:previous_page('closed')">前一页</a></li>
+                <li class="active"><span>第<span class="current-page">1</span>页</span></li>
+                <li class="next-page disabled"><a href="javascript:next_page('closed')">后一页</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-center">Copyright All Reserved by Richard Dong, 2014.</p>
+  </div>
+  <script type="text/javascript" src="bootstrap/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bootstrap/js/bootstrap-ie.js"></script>
+  <script type="text/javascript" src="js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/common.js"></script>
+  <script type="text/javascript" src="js/login.js"></script>
+  <script type="text/javascript">
+  $().ready(function() {
+    $.post("/api/list-user.php", function(result) {
+      var users = result.users;
+      if (users && users.forEach) {
+        $("#select-uid").empty();
+        $("#select-uid").append('<option value="">全部</option>');
+        users.forEach(function(u) {
+          var opt = $("<option></option>");
+          opt.attr("value", u.id);
+          opt.text(u.jsoninfo.name || u.id);
+          $("#select-uid").append(opt);
+        });
+      }
+    });
+    $("#select-uid").on("change", reload_tab_contents);
+    reload_tab_contents();
+  });
+  function reload_tab_contents(tab) {
+    var uid = $("#select-uid").val() || "";
+    var filter = (uid === "") ? {} : {starter:uid};
+    if (typeof(tab) === "string") {
+      reload(tab);
+      return;
+    }
+    tab = ["assigned", "fixed", "closed"];
+    $.post("/api/count-ticket.php", filter, function(result) {
+      var count = result === undefined ? [] : result.ticketCount;
+      tab.forEach(function(s) {
+        var c = 0;
+        count.forEach(function(p) { if (p.status === s) c = p.count; });
+        $(".data-count-" + s).text(c);
+        $("#tab-" + s + " .current-page").text(1);
+      });
+      tab.forEach(function(s) {
+        reload(s);
+      });
+    });
+  }
+  function reload(status, changePage, noClear) {
+    var tabContent = $("#tab-" + status + " .content")
+    if (noClear !== true) {
+      tabContent.empty();
+    }
+    var uid = $("#select-uid").val() || "";
+    var page = parseInt($("#tab-" + status + " .current-page").text(), 10);
+    var count = parseInt($(".data-count-" + status).text(), 10);
+    var pagesize = 8;
+    var maxPage = Math.ceil(count / pagesize);
+    var updatePager = function() {
+      $("#tab-" + status + " .pager .prev").attr("class", "prev" + (page <= 1 ? " disabled" : ""));
+      $("#tab-" + status + " .pager .next-page").attr("class", "next-page" + (page >= maxPage ? " disabled" : ""));
+    };
+    updatePager();
+    if (changePage === undefined) changePage = 0;
+    if (page + changePage <= 0) return;
+    if (page + changePage > maxPage) return;
+    var arg = (uid === "") ? {} : {starter:uid};
+    arg.pagesize = pagesize;
+    arg.page = page + changePage;
+    arg.status = status;
+    $.post("/api/list-ticket.php", arg, function(result) {
+      if (result && !result.error && result.tickets) {
+        tabContent.empty();
+        result.tickets.forEach(function(t) {
+          tabContent.append(render_ticket(t));
+        });
+        $("#tab-" + status + " .current-page").text(page + changePage);
+        page = page + changePage;
+        updatePager();
+      }
+    });
+  }
+  function previous_page(tab) { reload(tab, -1, true); }
+  function next_page(tab) { reload(tab, 1, true); }
+</script>
+</body>
+</html>
