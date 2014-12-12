@@ -18,6 +18,9 @@
       <div class="container">
         <div class="brand">
           <h2>信息化设备报修系统</h2>
+          <!--[if lte IE 7]>
+          <small>您使用的IE浏览器版本低于8，或者使用了低于IE8的兼容性视图，为确保使用效果，请升级浏览器。</small>
+          <![endif]-->
         </div>
       </div>
     </div>
@@ -46,8 +49,8 @@
         <div class="well" id="ticket-content">
         </div>
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#tab-action" data-toggle="tab">操作</a></li>
-          <li><a href="#tab-comment" data-toggle="tab">历史记录</a></li>
+          <li class="active"><a href="#tab-comment" data-toggle="tab">历史记录</a></li>
+          <li><a href="#tab-action" data-toggle="tab">操作</a></li>
         </ul>
         <div class="tab-content">
           <blockquote id="comment-demo">
@@ -61,9 +64,9 @@
               <a js-caller js-function="remove_comment" js-arg="" class="remove-link">删除</a>
             </small>
           </blockquote>
-          <div class="tab-pane" id="tab-comment">
+          <div class="tab-pane active" id="tab-comment">
           </div>
-          <div class="tab-pane active" id="tab-action">
+          <div class="tab-pane" id="tab-action">
             <iframe id="frm-comment-ticket" name="frm-comment-ticket" style="display:none;"></iframe>
             <form class="form-horizontal" id="comment-ticket" method="post" action="/api/comment-ticket.php" enctype="multipart/form-data" target="frm-comment-ticket">
               <input class="ticketid" type="text" name="ticketid" value="" style="display:none;">
@@ -105,9 +108,7 @@
           </div>
         </div>
         <div class="media" id="ticket-demo">
-          <button class="btn btn-success pull-left"><i class="icon-check"></i>
-            <span class="status">已修复</span>
-          </button>
+          <div class="media-image"></div>
           <div class="media-body">
             <div>
               <strong><span id="data-starter">报修人</span></strong> 报修了
@@ -120,7 +121,10 @@
             <div>报修时间: <span id="data-issuetime">2014-12-12 12:12</span></div>
             <div>维修时限: <span id="data-deadline">2014-12-12 12:12</span></div>
             <div>最近更新: <span id="data-updatetime">2014-12-12 12:12</span></div>
-            <div class="pull-right"><a id="data-edit-link" href="">编辑</a></div>
+            <div class="pull-right">
+              <a id="data-edit-link" href="">编辑</a>
+              <a id="data-remove-link" js-caller js-function="remove_ticket" js-arg="">删除</a>
+            </div>
           </div>
         </div>
       </div>
@@ -138,6 +142,7 @@
   $().ready(function() {
     var id = parseInt(/ticket-([0-9]+)\.html/.exec(window.location.pathname)[1], 10);
     load_ticket(id);
+    load_comment(id);
     $("#comment-ticket").validate({
       rules: {
         author: "required"
@@ -166,6 +171,7 @@
         $("#ticket-content").empty();
         $("#ticket-content").append(render_ticket(result.tickets[0], "yyyy年M月d日 hh时mm分"));
         $("#ticket-content #data-edit-link").css("display", result.tickets[0].editable ? "inline" : "none");
+        $("#ticket-content #data-remove-link").css("display", result.tickets[0].removable ? "inline" : "none");
         $("input.ticketid").val(id);
       }
     });
@@ -176,21 +182,22 @@
       $("#tab-comment").empty();
       result.comments.forEach(function(record) {
         var action = {
+          create: "创建了报修单。",
           complete: "完成了维修。",
           cancel: "取消了报修单。",
           reopen: "提交重新维修。",
           edit: "修改了报修单。",
-          comment: ""
+          comment: "追加跟踪信息："
         };
-        var message = action[record.jsoninfo.action] + (record.jsoninfo.comment || "");
+        var message = action[record.action] + (record.comment || "");
         var elem = $("#comment-demo").clone();
-        elem.find(".author").text(record.jsoninfo.author);
+        elem.find(".author").text(record.author);
         elem.find(".updatetime").text(format_date(record.updatetime, "yyyy年M月d日 hh时mm分"));
         elem.find(".message").text(message);
         elem.find(".remove-link").css("display", record.editable === true ? "inline" : "none");
         elem.find(".remove-link").attr("js-arg", record.id);
         elem.attr("id", "comment-" + record.id);
-        if (record.jsoninfo.file) {
+        if (record.jsoninfo && record.jsoninfo.file) {
           elem.find(".file").css("display", "inline");
           elem.find(".filename").text(record.jsoninfo.file.originalname);
           elem.find("a.file").attr("href", "/upload/" + record.jsoninfo.file.name);
@@ -217,6 +224,16 @@
         alert("操作失败：" + result.message + "(" + JSON.stringify(result.error) + ")");
       } else {
         $("#comment-" + id).remove();
+      }
+    });
+  }
+  function remove_ticket(id) {
+    if (!confirm("确实要删除这条报修单吗？")) return;
+    $.post("/api/remove-ticket.php", {ticketid:id}, function(result) {
+      if (!result || result.error) {
+        alert("操作失败：" + result.message + "(" + JSON.stringify(result.error) + ")");
+      } else {
+        alert("删除成功。");
       }
     });
   }

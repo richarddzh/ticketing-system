@@ -18,6 +18,9 @@
       <div class="container">
         <div class="brand">
           <h2>信息化设备报修系统</h2>
+          <!--[if lte IE 7]>
+          <small>您使用的IE浏览器版本低于8，或者使用了低于IE8的兼容性视图，为确保使用效果，请升级浏览器。</small>
+          <![endif]-->
         </div>
       </div>
     </div>
@@ -51,9 +54,9 @@
             </div>
           </div>
           <div class="control-group">
-            <label class="control-label" for="description">详情描述</label>
+            <label class="control-label" for="detail">详情描述</label>
             <div class="controls">
-              <textarea rows="3" id="description" name="description"></textarea>
+              <textarea rows="3" id="detail" name="detail"></textarea>
             </div>
           </div>
           <div class="control-group">
@@ -90,13 +93,13 @@
     $("#new-ticket").validate({
       rules: {
         item: "required",
-        description: { required: true, minlength: 20 },
+        detail: { required: true, minlength: 20 },
         owner: "required",
         deadline: { required: true, timestamp: true }
       },
       messages: {
         item: "请输入维修项目的名称。",
-        description: { 
+        detail: { 
           required: "请详细描述待维修项目的具体信息和报修原因。",
           minlength: "请更加详细的描述待维修项目的具体信息和报修原因。"
         },

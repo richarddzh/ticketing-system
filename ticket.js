@@ -1,61 +1,52 @@
 var fs = require("fs");
 var path = require("path");
 var common = require("./common.js");
-var config = common.config;
-var db = common.database;
+var async = common.async;
 
 module.exports.add = function(req, res) {
-  var user = req.cookies["user"];
+  var user = req.cookies["user"] || {};
   var param = {
     starter: user.id,
+    startername: user.name,
     owner: req.body.owner,
-    updatetime: new Date(),
     status: "assigned",
-    jsoninfo: JSON.stringify({
-      startername: user.jsoninfo.name || user.id,
-      issuetime: new Date(),
-      deadline: new Date(req.body.deadline),
-      item: req.body.item,
-      description: req.body.description 
-    })
+    deadline: new Date(req.body.deadline),
+    item: req.body.item,
+    detail: req.body.detail 
   };
-  db.query("insert into `ticket` set ?", param, db.makeQueryHandler(res));
+  async.concat([
+    async.query("insert into `ticket` set ?", param),
+    async.updateOne(res, "无法插入新的报修单。"),
+    async.send(res),
+    async.query("insert into `record` set ?", function(result) {
+      return {
+        ticket: result.insertId,
+        action: "create",
+        user: user.id,
+        author: user.name
+      };
+    })
+    ]);
 };
 
 module.exports.edit = function(req, res) {
   var user = req.cookies["user"];
-  db.query("select * from `ticket` where `id`=?", [req.body.id], function(error, result) {
-    if (error) {
-      res.send({error:JSON.stringify(error), message:"读取数据库发生错误。"});
-    } else if (!result || !result[0]) {
-      res.send({error:"ticket not exist", message:"要修改的报修单不存在。"});
-    } else if (result[0].starter !== user.id && user.role !== "admin") {
-      res.send({error:"unauthorized", message:"不能修改其他用户创建的报修单。"});
-    } else {
-      result[0].jsoninfo = JSON.parse(result[0].jsoninfo);
-      result[0].jsoninfo.deadline = new Date(req.body.deadline);
-      result[0].jsoninfo.item = req.body.item;
-      result[0].jsoninfo.description = req.body.description;
-      var param = {
-        owner: req.body.owner,
-        updatetime: new Date(),
-        jsoninfo: JSON.stringify(result[0].jsoninfo)
-      };
-      db.query("update `ticket` set ? where `id`=?", [param, req.body.id], 
-        db.makeQueryHandler(res, {}, undefined, 1, function() {
-          var record = {
-            ticket: req.body.id,
-            updatetime: new Date(),
-            jsoninfo: JSON.stringify({
-              action: "edit",
-              author: user.jsoninfo.name || user.id,
-              user: user.id
-            })
-          };
-          db.query("insert into `record` set ?", record, db.makeQueryHandler(res));
-        }));
-    }
-  });
+  var param = {
+    item: req.body.item,
+    detail: req.body.detail,
+    owner: req.body.owner,
+    deadline: new Date(req.body.deadline)
+  };
+  async.concat([
+    async.query("update `ticket` set ? where `id`=?", [param, req.body.id]),
+    async.updateOne(res, "无法插入新的报修单。"),
+    async.send(res),
+    async.query("insert into `record` set ?", {
+      ticket: req.body.id,
+      action: "edit",
+      user: user.id,
+      author: user.name})
+    ]);
 };
 
 module.exports.list = function(req, res) {
@@ -73,23 +64,20 @@ module.exports.list = function(req, res) {
   });
   sqlarg.push((page - 1) * pagesize);
   sqlarg.push(pagesize);
-  db.query("select * from `ticket` where " + sqlcond + " order by updatetime desc limit ?,?", sqlarg, function(error, result) {
-    var output = {};
-    if (error) {
-      output.error = JSON.stringify(error);
-      output.message = "查询数据库发生了错误。";
-    } else {
+  async.concat([
+    async.query("select * from `ticket` where " + sqlcond + " order by updatetime desc limit ?,?", sqlarg),
+    async.useArray(res, "查询报修单失败。"),
+    function(result) {
       result.forEach(function(t) {
-        t.jsoninfo = JSON.parse(t.jsoninfo);
         t.updatetime = t.updatetime.toUTCString();
-        t.jsoninfo.issuetime = new Date(t.jsoninfo.issuetime).toUTCString();
-        t.jsoninfo.deadline = new Date(t.jsoninfo.deadline).toUTCString();
+        t.issuetime = t.issuetime.toUTCString();
+        t.deadline = t.deadline.toUTCString();
         t.editable = (t.starter === user.id || user.role === "admin");
+        t.removable = (user.role === "admin");
       });
-      output.tickets = result;
+      res.send({tickets: result});
     }
-    res.send(output);
-  });
+    ]);
 };
 
 module.exports.count = function(req, res) {
@@ -100,17 +88,18 @@ module.exports.count = function(req, res) {
     sqlarg.push(key);
     sqlarg.push(req.body[key]);
   });
-  db.query("select `status`, count(*) as `count` from `ticket` where " + sqlcond + " group by `status`", 
-    sqlarg, function(error, result) {
-    var output = {};
-    if (error) {
-      output.error = JSON.stringify(error);
-      output.message = "查询数据库发生了错误。";
-    } else {
-      output.ticketCount = result;
-    }
-    res.send(output);
-  });
+  async.concat([
+    async.query("select `status`, count(*) as `count` from `ticket` where " + sqlcond + " group by `status`", sqlarg),
+    async.useArray(res, "查询报修单数量失败。"),
+    async.send(res)
+    ]);
+};
+
+var actionMap = {
+  complete: { assigned: true, changeStatus: "fixed" },
+  cancel: { assigned: true, changeStatus: "closed" },
+  reopen: { fixed: true, closed: true, changeStatus: "assigned" },
+  comment: { assigned: true }
 };
 
 module.exports.comment = function(req, res) {
@@ -121,92 +110,93 @@ module.exports.comment = function(req, res) {
   } : undefined;
   var record = {
     ticket: req.body.ticketid,
-    updatetime: new Date(),
-    jsoninfo: JSON.stringify({
-      action: req.body.action,
-      comment: req.body.comment,
-      author: req.body.author,
-      user: user.id,
-      file: file
-    })
+    action: req.body.action,
+    user: user.id,
+    author: req.body.author || "",
+    comment: req.body.comment || "",
+    jsoninfo: JSON.stringify({file: file})
   };
-  db.query("select * from `ticket` where `id`=?", req.body.ticketid, function(error, result) {
-    if (error) {
-      res.send({error: JSON.stringify(error), message: "读取数据库发生错误。"});
-      return;
-    }
-    if (!result || !result[0]) {
-      res.send({error: "ticket not exist", message: "要操作的报修单不存在。"});
-      return;
-    } 
-    var ticket = result[0];
-    var actionMap = {
-      complete: { assigned: true, changeStatus: "fixed" },
-      cancel: { assigned: true, changeStatus: "closed" },
-      reopen: { fixed: true, closed: true, changeStatus: "assigned" },
-      comment: { assigned: true }
-    };
-    if (actionMap[req.body.action][ticket.status] !== true) {
-      res.send({error: "bad status", message: "当前状态下无法进行这个操作。"})
-      return;
-    }
-    var sql = "update `ticket` set updatetime=? where id=?";
-    var sqlarg = [new Date(), ticket.id];
-    if (actionMap[req.body.action].changeStatus !== undefined) {
-      if (user.id !== ticket.starter && user.role !== "admin") {
-        res.send({error: "unauthorized", message: "改变报修状态需要报修单的创建者进行操作。"});
+  async.concat([
+    async.query("select * from `ticket` where `id`=?", req.body.ticketid),
+    async.useOne(res, "要操作的报修单不存在。"),
+    function(ticket, next) {
+      if (actionMap[req.body.action][ticket.status] !== true) {
+        res.send({error: "bad status", message: "当前状态下无法进行这个操作。"});
         return;
       }
-      sql = "update `ticket` set updatetime=?, status=? where id=?";
-      sqlarg = [new Date(), actionMap[req.body.action].changeStatus, ticket.id];
-    }
-    db.query(sql, sqlarg, db.makeQueryHandler(res, {}, undefined, 1, function() {
-      db.query("insert into `record` set ?", record, db.makeQueryHandler(res));
-    }));
-  });
+      var sql = "update `ticket` set updatetime=? where id=?";
+      var sqlarg = [new Date(), ticket.id];
+      if (actionMap[req.body.action].changeStatus !== undefined) {
+        if (user.id !== ticket.starter && user.role !== "admin") {
+          res.send({error: "unauthorized", message: "改变报修状态需要报修单的创建者进行操作。"});
+          return;
+        }
+        sql = "update `ticket` set status=? where id=?";
+        sqlarg = [actionMap[req.body.action].changeStatus, ticket.id];
+      }
+      next({sql: sql, sqlarg: sqlarg});
+    },
+    async.query(function(param) { return param.sql; }, function(param) { return param.sqlarg; }),
+    async.changeOne(res, "无法更新报修单状态。"),
+    async.query("insert into `record` set ?", record),
+    async.updateOne(res, "无法插入新的历史记录。"),
+    async.send(res)
+    ]);
 };
 
 module.exports.listComments = function(req, res) {
   var user = req.cookies["user"] || {};
-  db.query("select * from `record` where `ticket`=? order by updatetime desc", [req.body.ticketid], function(error, result) {
-    var output = {};
-    if (error) {
-      output.error = JSON.stringify(error);
-      output.message = "查询数据库发生了错误。";
-    } else {
+  async.concat([
+    async.query("select * from `record` where `ticket`=? order by updatetime desc", [req.body.ticketid]),
+    async.useArray(res, "查询历史记录失败。"),
+    function(result) {
       result.forEach(function(r) {
         r.jsoninfo = JSON.parse(r.jsoninfo);
         r.updatetime = r.updatetime.toUTCString();
-        r.editable = (/*r.jsoninfo.user === user.id || */user.role === "admin");
+        r.editable = (user.role === "admin");
       });
-      output.comments = result;
+      res.send({comments: result});
     }
-    res.send(output);
-  });
+    ]);
 };
 
 module.exports.removeComment = function(req, res) {
-  db.query("select * from `record` where `id`=?", [req.body.id], function(error, result) {
-    if (error) {
-      res.send({error: JSON.stringify(error), message: "读取数据库发生错误。"});
-      return;
-    } 
-    if (!result || !result[0]) {
-      res.send({error: "comment not exist", message: "要删除的记录不存在。"});
-      return;
-    }
-    var record = result[0];
-    record.jsoninfo = JSON.parse(record.jsoninfo);
-    if (record.jsoninfo.file) {
-      fs.unlink(path.join(__dirname, "public", "upload", record.jsoninfo.file.name), function(error) {
-        if (error) {
-          res.send({error: JSON.stringify(error), message: "无法删除附件文件。"});
-        } else {
-          db.query("delete from `record` where `id`=?", [req.body.id], db.makeQueryHandler(res));
-        }
-      });
-    } else {
-      db.query("delete from `record` where `id`=?", [req.body.id], db.makeQueryHandler(res));
-    }
-  });
+  async.concat([
+    async.query("select * from `record` where `id`=?", [req.body.id]),
+    async.useOne(res, "要删除的历史记录不存在。"),
+    function(record, next) {
+      record.jsoninfo = JSON.parse(record.jsoninfo);
+      if (record.jsoninfo && record.jsoninfo.file) {
+        fs.unlink(path.join(__dirname, "public", "upload", record.jsoninfo.file.name), function(error) {
+          if (error) {
+            res.send({error: JSON.stringify(error), message: "无法删除附件文件。"});
+          } else {
+            next();
+          }
+        });
+      } else {
+        next();
+      }
+    },
+    async.query("delete from `record` where `id`=?", [req.body.id]),
+    async.updateOne(res, "无法删除历史记录。"),
+    async.send(res)
+    ]);
+};
+
+module.exports.remove = function(req, res) {
+  async.concat([
+    async.query("select count(*) as `count` from `record` where `ticket`=?", [req.body.ticketid]),
+    async.useOne(res, "无法获取相关历史记录的数量。"),
+    function(result, next) {
+      if (result.count !== 0) {
+        res.send({error: "bad action", message: "请先删除此报修单的所有历史记录。"});
+      } else {
+        next();
+      }
+    },
+    async.query("delete from `ticket` where `id`=?", [req.body.ticketid]),
+    async.updateOne(res, "无法删除报修单。"),
+    async.send(res)
+    ]);
 };

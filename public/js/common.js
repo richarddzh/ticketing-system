@@ -96,29 +96,28 @@ function format_date(d, fmt) {
 
 function render_ticket(ticket, dateformat) {
   var elem = $("#ticket-demo").clone();
-  elem.find("#data-starter").text(ticket.jsoninfo.startername);
-  elem.find("#data-item").text(ticket.jsoninfo.item);
-  elem.find("#data-detail").text(ticket.jsoninfo.description);
-  elem.find("#data-issuetime").text(format_date(ticket.jsoninfo.issuetime, dateformat));
+  elem.find("#data-starter").text(ticket.startername);
+  elem.find("#data-item").text(ticket.item);
+  elem.find("#data-detail").text(ticket.detail);
+  elem.find("#data-issuetime").text(format_date(ticket.issuetime, dateformat));
   elem.find("#data-owner").text(ticket.owner);
   elem.find("#data-updatetime").text(format_date(ticket.updatetime, dateformat));
-  elem.find("#data-deadline").text(format_date(ticket.jsoninfo.deadline, dateformat));
+  elem.find("#data-deadline").text(format_date(ticket.deadline, dateformat));
   elem.find("#data-link").attr("href", "ticket-" + ticket.id + ".html");
   elem.find("#data-edit-link").attr("href", "edit-ticket-" + ticket.id + ".html");
+  elem.find("#data-remove-link").attr("js-arg", ticket.id);
   elem.attr("id", "ticket-" + ticket.id);
   var status = ticket.status;
-  if (status === "assigned" && new Date(ticket.jsoninfo.deadline) < new Date()) {
+  if (status === "assigned" && new Date(ticket.deadline) < new Date()) {
     status = "overdue";
   }
   var attr = {
-    "assigned": {btn:"btn-warning", icon:"icon-wrench", msg:"待维修"},
-    "fixed": {btn:"btn-success", icon:"icon-check", msg:"已修复"},
-    "closed": {btn:"", icon:"icon-trash", msg:"已取消"},
-    "overdue": {btn:"btn-danger", icon:"icon-exclamation-sign", msg:"已过期"}
+    "assigned": '<button class="btn btn-warning pull-left"><i class="icon-wrench"></i> 待维修</button>',
+    "fixed": '<button class="btn btn-success pull-left"><i class="icon-check"></i> 已修复</button>',
+    "closed": '<button class="btn pull-left"><i class="icon-trash"></i> 已取消</button>',
+    "overdue": '<button class="btn btn-danger pull-left"><i class="icon-exclamation-sign"></i> 已过期</button>'
   };
-  elem.find(".btn").attr("class", "btn pull-left " + attr[status].btn);
-  elem.find(".btn i").attr("class", attr[status].icon);
-  elem.find(".btn span.status").text(attr[status].msg);
+  elem.find(".media-image").html(attr[status]);
   return elem;
 }
 

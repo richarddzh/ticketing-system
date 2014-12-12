@@ -18,6 +18,9 @@
       <div class="container">
         <div class="brand">
           <h2>信息化设备报修系统</h2>
+          <!--[if lte IE 7]>
+          <small>您使用的IE浏览器版本低于8，或者使用了低于IE8的兼容性视图，为确保使用效果，请升级浏览器。</small>
+          <![endif]-->
         </div>
       </div>
     </div>
@@ -42,12 +45,13 @@
           <li><a data-async method="post" action="/api/logout.php" data-target="on_logout"><i class="icon-off"></i> 退出</a></li>
         </ul>
       </div>
-      <div class="span3">
+      <div class="span4">
         <table class="table table-condensed">
           <thead>
-            <tr><th>用户名</th><th>角色</th><th>操作</th></tr>
+            <tr><th>用户名</th><th>显示名</th><th>角色</th><th>操作</th></tr>
             <tr id="tr-user">
               <td class="data-user-id">admin</td>
+              <td class="data-user-name">管理员</td>
               <td class="data-user-role">管理员</td>
               <td><a js-caller js-function="delete_user"><i class="icon-remove"></i> 删除</a></td>
             </tr>
@@ -56,13 +60,19 @@
           </tbody>
         </table>
       </div>
-      <div class="span6 well">
+      <div class="span5 well">
         <p class="text-center">添加或更新用户</p>
         <form class="form-horizontal" id="form-add-user" data-async data-target="on_add_user" method="post" action="/api/add-user.php">
           <div class="control-group">
             <label class="control-label" for="id">用户名</label>
             <div class="controls">
               <input type="text" id="id" name="id">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="name">显示名</label>
+            <div class="controls">
+              <input type="text" id="name" name="name">
             </div>
           </div>
           <div class="control-group">
@@ -144,6 +154,7 @@
         users.forEach(function(u) {
           var tr = $("#tr-user").clone();
           tr.find(".data-user-id").text(u.id);
+          tr.find(".data-user-name").text(u.name || u.id);
           tr.find(".data-user-role").text(u.role === "admin" ? "管理员" : "用户");
           tr.attr("id", "tr-user-" + u.id);
           tr.find("a").attr("js-arg", u.id);

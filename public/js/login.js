@@ -1,3 +1,13 @@
+var login_listener = {
+  callbacks: [],
+  add: function(cb) {
+    this.callbacks.push(cb);
+  },
+  fire_all: function(user) {
+    this.callbacks.forEach(function(cb) { cb(user); });
+  }
+};
+
 $().ready(function() {
   $("#form-login").validate({
     rules: {
@@ -10,13 +20,14 @@ $().ready(function() {
     }
   });
   $.post("/api/login-user.php", function(result) {
-    on_login(result);
+    on_login(result, true);
   });
 });
 
-function on_login(result) {
+function on_login(result, noAlert) {
   if (result && result.user) {
-    $(".data-username").text(result.user.jsoninfo.name || result.user.id);
+    login_listener.fire_all(result.user);
+    $(".data-username").text(result.user.name || result.user.id);
     $(".data-user-id").text(result.user.id);
     $("#form-login").css("display", "none");
     $(".require-login").css("display", "block");
@@ -26,7 +37,7 @@ function on_login(result) {
       $(".require-admin").css("display", "none");
     }
   } else {
-    if (result.alert === true) {
+    if (!noAlert) {
       alert("登录失败，请检查输入的用户名和密码是否正确。");
     }
     on_logout();

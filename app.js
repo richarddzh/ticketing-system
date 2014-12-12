@@ -38,10 +38,11 @@ app.post("/api/new-ticket.php", urlParser, login.require(), ticket.add);
 app.post("/api/list-ticket.php", urlParser, ticket.list);
 app.post("/api/count-ticket.php", urlParser, ticket.count);
 app.post("/api/edit-ticket.php", urlParser, login.require(), ticket.edit);
-app.post("/api/comment-ticket.php", uploadParser, login.require(), contentType("text/plain"), ticket.comment);
+app.post("/api/comment-ticket.php", uploadParser, login.require(), contentType("text/html"), ticket.comment);
 app.post("/api/list-comment.php", urlParser, ticket.listComments);
 app.post("/api/remove-comment.php", urlParser, login.requireAdmin, ticket.removeComment);
+app.post("/api/remove-ticket.php", urlParser, login.requireAdmin, ticket.remove);
 
-app.listen(4000);
+app.listen(5000);
 
 module.exports = app;

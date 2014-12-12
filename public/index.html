@@ -18,6 +18,9 @@
       <div class="container">
         <div class="brand">
           <h2>信息化设备报修系统</h2>
+          <!--[if lte IE 7]>
+          <small>您使用的IE浏览器版本低于8，或者使用了低于IE8的兼容性视图，为确保使用效果，请升级浏览器。</small>
+          <![endif]-->
         </div>
       </div>
     </div>
@@ -50,13 +53,40 @@
           <li class="active"><a href="#tab-assigned" data-toggle="tab">待维修(<span class="data-count-assigned"></span>)</a></li>
           <li><a href="#tab-fixed" data-toggle="tab">已修复(<span class="data-count-fixed"></span>)</a></li>
           <li><a href="#tab-closed" data-toggle="tab">已取消(<span class="data-count-closed"></span>)</a></li>
+          <li><a href="#tab-statistic" data-toggle="tab">月统计</a></li>
         </ul>
         <div class="tab-content">
+          <div class="tab-pane" id="tab-statistic">
+            <select id="" class="span2">
+              <option value="2014">2014年</option>
+              <option value="2015">2015年</option>
+              <option value="2016">2016年</option>
+              <option value="2017">2017年</option>
+            </select>
+            <select id="" class="span2">
+              <option value="1">1月</option>
+              <option value="2">2月</option>
+              <option value="3">3月</option>
+              <option value="4">4月</option>
+              <option value="5">5月</option>
+              <option value="6">6月</option>
+              <option value="7">7月</option>
+              <option value="8">8月</option>
+              <option value="9">9月</option>
+              <option value="10">10月</option>
+              <option value="11">11月</option>
+              <option value="12">12月</option>
+            </select>
+            <table class="table table-striped">
+              <tr id="header"></tr>
+              <tr id="create"></tr>
+              <tr id="complete"></tr>
+              <tr id="cancel"></tr>
+            </table>
+          </div>
           <div class="tab-pane active" id="tab-assigned">
             <div class="media" id="ticket-demo">
-              <button class="btn btn-success pull-left"><i class="icon-check"></i>
-                <span class="status">已修复</span>
-              </button>
+              <div class="media-image"></div>
               <div class="media-body">
                 <div>
                   <strong><span id="data-starter">报修人</span></strong> 报修了
@@ -76,31 +106,52 @@
             </div>
             <div id="content" class="content"></div>
             <div class="pager">
+              <![if !(IE 6)]>
               <ul>
                 <li class="prev disabled"><a href="javascript:previous_page('assigned')">前一页</a></li>
                 <li class="active"><span>第<span class="current-page">1</span>页</span></li>
                 <li class="next-page disabled"><a href="javascript:next_page('assigned')">后一页</a></li>
               </ul>
+              <![endif]>
+              <!--[if IE 6]>
+              <span class="prev disabled"><a href="javascript:previous_page('assigned')">前一页</a></span>
+              第<span class="current-page">1</span>页
+              <span class="next-page disabled"><a href="javascript:next_page('assigned')">后一页</a></span>
+              <![endif]-->
             </div>
           </div>
           <div class="tab-pane" id="tab-fixed">
             <div id="content" class="content"></div>
             <div class="pager">
+              <![if !(IE 6)]>
               <ul>
                 <li class="prev disabled"><a href="javascript:previous_page('fixed')">前一页</a></li>
                 <li class="active"><span>第<span class="current-page">1</span>页</span></li>
                 <li class="next-page disabled"><a href="javascript:next_page('fixed')">后一页</a></li>
               </ul>
+              <![endif]>
+              <!--[if IE 6]>
+              <span class="prev disabled"><a href="javascript:previous_page('fixed')">前一页</a></span>
+              第<span class="current-page">1</span>页
+              <span class="next-page disabled"><a href="javascript:next_page('fixed')">后一页</a></span>
+              <![endif]-->
             </div>
           </div>
           <div class="tab-pane" id="tab-closed">
             <div id="content" class="content"></div>
             <div class="pager">
+              <![if !(IE 6)]>
               <ul>
                 <li class="prev disabled"><a href="javascript:previous_page('closed')">前一页</a></li>
                 <li class="active"><span>第<span class="current-page">1</span>页</span></li>
                 <li class="next-page disabled"><a href="javascript:next_page('closed')">后一页</a></li>
               </ul>
+              <![endif]>
+              <!--[if IE 6]>
+              <span class="prev disabled"><a href="javascript:previous_page('closed')">前一页</a></span>
+              第<span class="current-page">1</span>页
+              <span class="next-page disabled"><a href="javascript:next_page('closed')">后一页</a></span>
+              <![endif]-->
             </div>
           </div>
         </div>
@@ -119,19 +170,36 @@
   $().ready(function() {
     $.post("/api/list-user.php", function(result) {
       var users = result.users;
+      var loginUser = result.loginUser;
       if (users && users.forEach) {
-        $("#select-uid").empty();
-        $("#select-uid").append('<option value="">全部</option>');
+        $("#select-uid").empty().append('<option value="">全部</option>');
+        $("tr#header").empty().append("<th>区分</th>");
+        $("tr#create").empty().append("<th>报修</th>");
+        $("tr#complete").empty().append("<th>完成</th>");
+        $("tr#cancel").empty().append("<th>撤销</th>");
         users.forEach(function(u) {
           var opt = $("<option></option>");
           opt.attr("value", u.id);
-          opt.text(u.jsoninfo.name || u.id);
+          opt.text(u.name || u.id);
           $("#select-uid").append(opt);
+          if (u.role === "user") {
+            $("tr#header").append($("<th></th>").text(u.name || u.id));
+            $("tr#create").append($("<td></td>").attr("uid", u.id));
+            $("tr#complete").append($("<td></td>").attr("uid", u.id));
+            $("tr#cancel").append($("<td></td>").attr("uid", u.id));
+          }
         });
       }
+      var reloadWithUser = function(u) {
+        var selecter = ((u || {}).id || "");
+        if (u && u.role === "admin") selecter = "";
+        $("#select-uid")[0].value = selecter;
+        reload_tab_contents();
+      };
+      reloadWithUser(loginUser);
+      login_listener.add(reloadWithUser);
     });
     $("#select-uid").on("change", reload_tab_contents);
-    reload_tab_contents();
   });
   function reload_tab_contents(tab) {
     var uid = $("#select-uid").val() || "";
@@ -142,7 +210,7 @@
     }
     tab = ["assigned", "fixed", "closed"];
     $.post("/api/count-ticket.php", filter, function(result) {
-      var count = result === undefined ? [] : result.ticketCount;
+      var count = result === undefined ? [] : result.result;
       tab.forEach(function(s) {
         var c = 0;
         count.forEach(function(p) { if (p.status === s) c = p.count; });
@@ -162,7 +230,7 @@
     var uid = $("#select-uid").val() || "";
     var page = parseInt($("#tab-" + status + " .current-page").text(), 10);
     var count = parseInt($(".data-count-" + status).text(), 10);
-    var pagesize = 8;
+    var pagesize = 6;
     var maxPage = Math.ceil(count / pagesize);
     var updatePager = function() {
       $("#tab-" + status + " .pager .prev").attr("class", "prev" + (page <= 1 ? " disabled" : ""));

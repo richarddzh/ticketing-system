@@ -1,16 +1,6 @@
-.nav-bottom-align {
-  margin-top: 30px;
-}
 body {
   position: relative;
   padding-top: 100px;
-}
-.user-profile img {
-  width: 40px;
-  height: 40px;
-}
-.user-profile .media-body {
-  margin-top: 9px;
 }
 .text-center {
   text-align: center;
@@ -21,16 +11,20 @@ body {
 input.error {
   border-color: #b94a48;
 }
-#tr-user {
-  display: none;
-}
-#ticket-demo {
-  display: none;
-}
-#comment-demo {
+#tr-user, #comment-demo, #ticket-demo, #form-login, .require-login {
   display: none;
 }
 .file .image {
   float: none;
   width: 240px;
+}
+.nav-stacked li {
+  display: block;
+  float: none;
+}
+.brand small {
+  font-size: 11px;
+}
+.span5 .form-horizontal {
+  margin-left: -60px;
 }

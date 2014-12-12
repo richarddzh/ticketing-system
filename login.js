@@ -1,22 +1,17 @@
 var common = require("./common.js");
-var config = common.config;
-var db = common.database;
+var async = common.async;
 
 module.exports.login = function(req, res) {
   res.clearCookie("user");
-  db.query("select * from `user` where `id`=? and `password`=?", 
-    [req.body.username, req.body.password], function(err, result) {
-    var output = {};
-    output.alert = true;
-    if (err) res.error = err;
-    else if (result && result.length === 1) {
-      output.user = result[0];
-      output.user.password = "";
-      output.user.jsoninfo = JSON.parse(output.user.jsoninfo);
-      res.cookie("user", output.user);
+  async.concat([
+    async.query("select * from `user` where `id`=? and `password`=?", [req.body.username, req.body.password]),
+    async.useOne(res, "登录失败，无法查询到匹配的用户。"),
+    function(user) {
+      user.password = "";
+      res.cookie("user", user);
+      res.send({user: user});
     }
-    res.send(output);
-  });
+    ]);
 };
 
 module.exports.logout = function(req, res) {
@@ -25,9 +20,7 @@ module.exports.logout = function(req, res) {
 };
 
 module.exports.user = function(req, res) {
-  var output = {};
-  output.user = req.cookies["user"];
-  res.send(output);
+  res.send({user: req.cookies["user"]});
 };
 
 module.exports.require = function(uidField) {
